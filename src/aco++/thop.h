@@ -88,6 +88,10 @@ struct problem {
     long int      UB;                     /* objective value of the optimal solution of the fractional knapsack problem */
 };
 
+typedef struct {
+    double dist;
+} EdgeInfo;
+
 extern struct problem instance;
 
 extern long int (*distance)(long int, long int);  
@@ -106,17 +110,13 @@ long int** compute_nn_lists(void);
 
 long int compute_fitness(long int *t, char *visited, long int t_size, char *p);
 
-int check_time_constraint(long int *t, long int t_size, char *p);
+static double travel_time_increment_when_adding_weight(const EdgeInfo *edges, long t_size, const long *W_edge, long idx, long w, double vmax, double vmin, double nu) 
 
-long int repair_solution(long int *t, long int t_size, char *p, long int current_profit);
+static double travel_time_decrement_when_removing_weight(const EdgeInfo *edges, long t_size,const long *W_edge, long idx, long w,double vmax, double vmin, double nu);
 
-int try_drop_item(long int *t, long int t_size, char *p, long int *best_profit);
+long greedy_packing_by_marginal_profit_per_time(const long *t, long t_size, const char *visited, char *p);
 
-int try_add_item(long int *t, long int t_size, char *p, long int *best_profit);
+long local_search_swap_items_to_improve_profit(const long *t, long t_size, const char *visited, char *p, long current_profit) ;
 
-int try_swap_items(long int *t, long int t_size, char *p, long int *best_profit);
-
-long int compute_fitness_dp(long int *t, char *visited, long int t_size, char *p);
-
-long int compute_fitness_hybrid_search(long int *t, char *visited, long int t_size, char *p);
+long int compute_fitness_hybrid(long *t, char *visited, long t_size, char *p);
 #endif

@@ -56,6 +56,7 @@
 #include <math.h>
 #include <limits.h>
 #include <assert.h>
+#include <cstring>
 
 #include "inout.h"
 #include "thop.h"
@@ -394,192 +395,272 @@ long int compute_fitness( long int *t, char *visited, long int t_size, char *p )
     return instance.UB + 1 - best_packing_plan_profit;
 }
 
+// -------------------------------------------------------------
+// Build edge information (distances along the tour)
+// -------------------------------------------------------------
+static void build_route_edge_info(const long int *t, long int t_size, EdgeInfo *edges) {
+    for (long i = 0; i < t_size - 1; ++i) {
+        long u = t[i], v = t[i+1];
+        edges[i].dist = (double)instance.distance[u][v];
+    }
+}
 
-int check_time_constraint(long int *t, long int t_size, char *p) {
-    const double v = (instance.max_speed - instance.min_speed) / instance.capacity_of_knapsack;
+// -------------------------------------------------------------
+// Compute travel time for a given edge and load
+// -------------------------------------------------------------
+static inline double compute_travel_time_on_edge(double dist, double vmax, double vmin, double nu, long W) {
+    double sp = vmax - nu * (double)W;
+    if (sp < vmin) sp = vmin;  // enforce lower bound
+    return dist / sp;
+}
+
+// -------------------------------------------------------------
+// Δt when adding weight w from edge idx to end
+// -------------------------------------------------------------
+static double travel_time_increment_when_adding_weight(const EdgeInfo *edges, long t_size,
+                             const long *W_edge, long idx, long w,
+                             double vmax, double vmin, double nu) {
+    double dt = 0.0;
+    for (long e = idx; e < t_size - 1; ++e) {
+        dt += compute_travel_time_on_edge(edges[e].dist, vmax, vmin, nu, W_edge[e] + w)
+            - compute_travel_time_on_edge(edges[e].dist, vmax, vmin, nu, W_edge[e]);
+    }
+    return dt;
+}
+
+// -------------------------------------------------------------
+// Δt when removing weight w from edge idx to end
+// -------------------------------------------------------------
+static double travel_time_decrement_when_removing_weight(const EdgeInfo *edges, long t_size,
+                                const long *W_edge, long idx, long w,
+                                double vmax, double vmin, double nu) {
+    double dt = 0.0;
+    for (long e = idx; e < t_size - 1; ++e) {
+        dt += compute_travel_time_on_edge(edges[e].dist, vmax, vmin, nu, W_edge[e] - w)
+            - compute_travel_time_on_edge(edges[e].dist, vmax, vmin, nu, W_edge[e]);
+    }
+    return dt;
+}
+
+// -------------------------------------------------------------
+// Greedy packing: pick items with best profit / Δtime ratio
+// -------------------------------------------------------------
+long greedy_packing_by_marginal_profit_per_time(const long *t, long t_size, const char *visited, char *p) {
+    const double vmax = instance.max_speed, vmin = instance.min_speed;
+    const double nu   = (vmax - vmin) / (double)instance.capacity_of_knapsack;
+
+    // Reset plan
+    for (int j = 0; j < instance.m; ++j) p[j] = 0;
+
+    // Prepare edges and load
+    EdgeInfo *edges = (EdgeInfo *)malloc((t_size-1) * sizeof(EdgeInfo));
+    build_route_edge_info(t, t_size, edges);
+
+    long *W_edge = (long *)calloc(t_size-1, sizeof(long)); 
+    double total_time = 0.0;  
+    long total_w = 0, total_profit = 0;
+
+    // Map cityId -> position in tour
+    long *posInTour = (long *)malloc(instance.n * sizeof(long));
+    for (long i = 0; i < instance.n; ++i) posInTour[i] = -1;
+    for (long i = 0; i < t_size; ++i) posInTour[t[i]] = i;
+
+    // Greedy iteration
+    while (1) {
+        int best_j = -1;
+        double best_score = -1.0;
+        double best_dt = 0.0;
+
+        for (int j = 0; j < instance.m; ++j) {
+            if (p[j]) continue;  
+            int city = instance.itemptr[j].id_city;
+            if (!visited[city]) continue;
+
+            long w = instance.itemptr[j].weight;
+            if (total_w + w > instance.capacity_of_knapsack) continue;
+
+            long idx = posInTour[city];
+            if (idx < 0 || idx >= t_size - 1) continue; 
+
+            double dt = travel_time_increment_when_adding_weight(edges, t_size, W_edge, idx, w, vmax, vmin, nu);
+
+            if (total_time + dt > instance.max_time + 1e-12) continue;
+
+            double score = (double)instance.itemptr[j].profit / (dt > 0 ? dt : 1e-9);
+            if (score > best_score) {
+                best_score = score; best_j = j; best_dt = dt;
+            }
+        }
+
+        if (best_j == -1) break;  // no feasible item left
+
+        // Pick best_j
+        int city = instance.itemptr[best_j].id_city;
+        long wj  = instance.itemptr[best_j].weight;
+        long idx = posInTour[city];
+
+        for (long e = idx; e < t_size - 1; ++e) W_edge[e] += wj;
+        total_time += best_dt;
+        total_w    += wj;
+        total_profit += instance.itemptr[best_j].profit;
+        p[best_j] = 1;
+    }
+
+    free(edges);
+    free(W_edge);
+    free(posInTour);
+    return total_profit;
+}
+
+// -------------------------------------------------------------
+// Local search: try improving profit by swapping items
+// -------------------------------------------------------------
+long local_search_swap_items_to_improve_profit(const long *t, long t_size, const char *visited, char *p, long current_profit) {
+    const double vmax = instance.max_speed, vmin = instance.min_speed;
+    const double nu   = (vmax - vmin) / (double)instance.capacity_of_knapsack;
+
+    EdgeInfo *edges = (EdgeInfo *)malloc((t_size-1) * sizeof(EdgeInfo));
+    build_route_edge_info(t, t_size, edges);
+
+    long *posInTour = (long *)malloc(instance.n * sizeof(long));
+    for (long i = 0; i < instance.n; ++i) posInTour[i] = -1;
+    for (long i = 0; i < t_size; ++i) posInTour[t[i]] = i;
+
+    // Rebuild W_edge and total_time from current plan
+    long *W_edge = (long *)calloc(t_size-1, sizeof(long));
+    for (int j = 0; j < instance.m; ++j) if (p[j]) {
+        long idx = posInTour[ instance.itemptr[j].id_city ];
+        long w   = instance.itemptr[j].weight;
+        for (long e = idx; e < t_size - 1; ++e) W_edge[e] += w;
+    }
     double total_time = 0.0;
-    long int total_weight = 0;
-    long int prev_city = 0;
-
-    for (long int i = 1; i < t_size; i++) {
-        long int curr_city = t[i];
-
-        // accumulate weight at current city
-        for (long int j = 0; j < instance.m; j++) {
-            if (p[j] && instance.itemptr[j].id_city == curr_city) {
-                total_weight += instance.itemptr[j].weight;
-            }
-        }
-
-        total_time += instance.distance[prev_city][curr_city] / (instance.max_speed - v * total_weight);
-
-        if (total_time - EPSILON > instance.max_time) {
-            return FALSE; // violates max_time
-        }
-        prev_city = curr_city;
-    }
-    return TRUE;
-}
-
-//------------------------------------------------------
-// Func repair: remove items having worst profit/weight ratio until max_time is satisfied 
-//------------------------------------------------------
-long int repair_solution(long int *t, long int t_size, char *p, long int current_profit) {
-    int improved = 1;
-    while (!check_time_constraint(t, t_size, p)) {
-        int worst_item = -1;
-        double worst_ratio = -1.0;
-
-        for (int j = 0; j < instance.m; j++) {
-            if (p[j]) {
-                double ratio = (double)instance.itemptr[j].profit / instance.itemptr[j].weight;
-                if (worst_item == -1 || ratio < worst_ratio) {
-                    worst_item = j;
-                    worst_ratio = ratio;
-                }
-            }
-        }
-
-        if (worst_item == -1) break;
-
-        // remove item
-        p[worst_item] = 0;
-        current_profit -= instance.itemptr[worst_item].profit;
-    }
-    return current_profit;
-}
-
-long int compute_fitness_dp(long int *t, char *visited, long int t_size, char *p) {
-    long int i, j;
-
-    int W = instance.capacity_of_knapsack;
-    int n = instance.m;
-
-    // Define table DP [n+1][W+1]
-    long int **dp = (long int **)malloc((n+1) * sizeof(long int *));
-    for (i = 0; i <= n; i++) {
-        dp[i] = (long int *)calloc(W+1, sizeof(long int));
+    for (long e = 0; e < t_size - 1; ++e) {
+        total_time += compute_travel_time_on_edge(edges[e].dist, vmax, vmin, nu, W_edge[e]);
     }
 
-    // Reset packing plan
-    for (j = 0; j < n; j++) p[j] = 0;
+    long total_w = 0;
+    for (int j = 0; j < instance.m; ++j) if (p[j]) total_w += instance.itemptr[j].weight;
 
-    // DP 0/1 Knapsack
-    for (i = 1; i <= n; i++) {
-        int weight = instance.itemptr[i-1].weight;
-        int profit = instance.itemptr[i-1].profit;
-        int city   = instance.itemptr[i-1].id_city;
-
-        if (!visited[city]) {
-            for (j = 0; j <= W; j++) dp[i][j] = dp[i-1][j];
-            continue;
-        }
-
-        for (j = 0; j <= W; j++) {
-            dp[i][j] = dp[i-1][j]; // not choose item i
-            if (j >= weight) {
-                long int candidate = dp[i-1][j - weight] + profit;
-                if (candidate > dp[i][j]) {
-                    dp[i][j] = candidate; // choose item i
-                }
-            }
-        }
-    }
-
-    long int total_profit = dp[n][W];
-
-    // Trace back to find which items are chosen
-    int w = W;
-    for (i = n; i > 0; i--) {
-        if (dp[i][w] != dp[i-1][w]) {
-            int idx = i-1;
-            p[idx] = 1; // item idx is chosen
-            w -= instance.itemptr[idx].weight;
-        }
-    }
-
-    for (i = 0; i <= n; i++) free(dp[i]);
-    free(dp);
-
-    // Fitness: the smaller the better
-    return instance.UB + 1 - total_profit;
-}
-
-int try_drop_item(long int *t, long int t_size, char *p, long int *best_profit) {
-    for (int j = 0; j < instance.m; j++) {
-        if (p[j]) {
-            p[j] = 0;
-            if (check_time_constraint(t, t_size, p)) {
-                long int profit = *best_profit - instance.itemptr[j].profit;
-                if (profit > *best_profit) {
-                    *best_profit = profit;
-                    return TRUE;
-                }
-            }
-            p[j] = 1; // revert
-        }
-    }
-    return FALSE;
-}
-
-int try_add_item(long int *t, long int t_size, char *p, long int *best_profit) {
-    for (int j = 0; j < instance.m; j++) {
-        if (!p[j]) {
-            p[j] = 1;
-            if (check_time_constraint(t, t_size, p)) {
-                long int profit = *best_profit + instance.itemptr[j].profit;
-                if (profit > *best_profit) {
-                    *best_profit = profit;
-                    return TRUE;
-                }
-            }
-            p[j] = 0; // revert
-        }
-    }
-    return FALSE;
-}
-
-//------------------------------------------------------
-// Local search: swap item having heavy and low profit with item having light and high profit
-//------------------------------------------------------
-int try_swap_items(long int *t, long int t_size, char *p, long int *best_profit) {
-    for (int i = 0; i < instance.m; i++) {
-        if (!p[i]) continue;
-        for (int j = 0; j < instance.m; j++) {
-            if (p[j]) continue;
-
-            long int profit_delta = instance.itemptr[j].profit - instance.itemptr[i].profit;
-            long int weight_delta = instance.itemptr[j].weight - instance.itemptr[i].weight;
-
-            if (profit_delta > 0) {
-                p[i] = 0; p[j] = 1;
-                if (check_time_constraint(t, t_size, p)) {
-                    *best_profit += profit_delta;
-                    return TRUE;
-                }
-                p[i] = 1; p[j] = 0; // revert
-            }
-        }
-    }
-    return FALSE;
-}
-
-long int compute_fitness_hybrid_search(long int *t, char *visited, long int t_size, char *p) {
-    // baseline DP
-    long int best_profit = compute_fitness_dp(t, visited, t_size, p);
-
-    if (!check_time_constraint(t, t_size, p)) {
-        best_profit = repair_solution(t, t_size, p, best_profit);
-    }
-
-    // local search
     int improved = 1;
     while (improved) {
         improved = 0;
-        if (try_drop_item(t, t_size, p, &best_profit)) { improved = 1; continue; }
-        if (try_add_item(t, t_size, p, &best_profit)) { improved = 1; continue; }
-        if (try_swap_items(t, t_size, p, &best_profit)) { improved = 1; continue; }
+
+        for (int i = 0; i < instance.m; ++i) if (p[i]) {
+            long ci = instance.itemptr[i].id_city, wi = instance.itemptr[i].weight, pi = instance.itemptr[i].profit;
+            long idx_i = posInTour[ci];
+
+            double dt_remove = travel_time_decrement_when_removing_weight(edges, t_size, W_edge, idx_i, wi, vmax, vmin, nu);
+
+            for (int j = 0; j < instance.m; ++j) if (!p[j] && visited[instance.itemptr[j].id_city]) {
+                long wj = instance.itemptr[j].weight, pj = instance.itemptr[j].profit;
+                if (total_w - wi + wj > instance.capacity_of_knapsack) continue;
+
+                long cj = instance.itemptr[j].id_city;
+                long idx_j = posInTour[cj];
+
+                // Recompute new travel time with i removed and j added
+                double new_time;
+                {
+                    long *Wtmp = (long *)malloc((t_size-1) * sizeof(long));
+                    memcpy(Wtmp, W_edge, (t_size-1) * sizeof(long));
+                    for (long e = idx_i; e < t_size - 1; ++e) Wtmp[e] -= wi;
+                    for (long e = idx_j; e < t_size - 1; ++e) Wtmp[e] += wj;
+
+                    double time_after = 0.0;
+                    for (long e = 0; e < t_size - 1; ++e)
+                        time_after += compute_travel_time_on_edge(edges[e].dist, vmax, vmin, nu, Wtmp[e]);
+                    new_time = time_after;
+
+                    free(Wtmp);
+                }
+
+                long new_profit = current_profit - pi + pj;
+
+                if (new_time <= instance.max_time + 1e-12 && new_profit > current_profit) {
+                    // Accept move
+                    p[i] = 0; p[j] = 1;
+                    for (long e = idx_i; e < t_size - 1; ++e) W_edge[e] -= wi;
+                    for (long e = idx_j; e < t_size - 1; ++e) W_edge[e] += wj;
+                    total_time = new_time;
+                    total_w = total_w - wi + wj;
+                    current_profit = new_profit;
+                    improved = 1;
+                    goto NEXT_ITER; 
+                }
+            }
+        }
+        NEXT_ITER: ;
     }
 
+    free(edges);
+    free(W_edge);
+    free(posInTour);
+    return current_profit;
+}
+
+// -------------------------------------------------------------
+// Hybrid fitness function
+// with greedy + local search refinements
+// -------------------------------------------------------------
+long int compute_fitness_hybrid(long *t, char *visited, long t_size, char *p) {
+    long int best_profit = 0;
+    char *best_plan = (char *)malloc(instance.m * sizeof(char));
+    char *tmp_plan  = (char *)malloc(instance.m * sizeof(char));
+
+    // Try multiple randomized heuristics (as in original paper)
+    for (int trial = 0; trial < max_packing_tries; trial++) {
+        double par_a = ran01(&seed);
+        double par_b = ran01(&seed);
+        double par_c = ran01(&seed);
+        double par_sum = par_a + par_b + par_c;
+        par_a /= par_sum; par_b /= par_sum; par_c /= par_sum;
+
+        // Reset temporary plan
+        for (int j = 0; j < instance.m; j++) tmp_plan[j] = 0;
+
+        // Compute item scores (author’s formula)
+        double *item_vector = (double *)malloc(instance.m * sizeof(double));
+        double *help_vector = (double *)malloc(instance.m * sizeof(double));
+        int l = 0;
+        for (int j = 0; j < instance.m; j++) {
+            if (!visited[instance.itemptr[j].id_city]) continue;
+            item_vector[l] = (-1.0 * pow(instance.itemptr[j].profit, par_a)) /
+                             (pow(instance.itemptr[j].weight, par_b) *
+                              pow(1.0 + instance.itemptr[j].id_city, par_c)); 
+            help_vector[l] = j;
+            l++;
+        }
+
+        sort2_double(item_vector, help_vector, 0, l-1);
+
+        // Greedy selection (original-style)
+        long int profit = 0, weight = 0;
+        for (int k = 0; k < l; k++) {
+            int j = help_vector[k];
+            if (weight + instance.itemptr[j].weight > instance.capacity_of_knapsack) continue;
+            tmp_plan[j] = 1;
+            profit += instance.itemptr[j].profit;
+            weight += instance.itemptr[j].weight;
+        }
+
+        free(item_vector);
+        free(help_vector);
+
+        // Refine with strict greedy + swap local search
+        profit = greedy_packing_by_marginal_profit_per_time(t, t_size, visited, tmp_plan);
+        profit = local_search_swap_items_to_improve_profit(t, t_size, visited, tmp_plan, profit);
+
+        if (profit > best_profit) {
+            best_profit = profit;
+            memcpy(best_plan, tmp_plan, instance.m * sizeof(char));
+        }
+    }
+
+    memcpy(p, best_plan, instance.m * sizeof(char));
+
+    free(best_plan);
+    free(tmp_plan);
+
+    // Return fitness (smaller = better, consistent with original)
     return instance.UB + 1 - best_profit;
 }

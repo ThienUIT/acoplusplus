@@ -723,7 +723,7 @@ long int nn_tour( void )
 
     n_tours += 1;
 
-    ant[0].fitness = compute_fitness_hybrid_search( ant[0].tour, ant[0].visited, ant[0].tour_size, ant[0].packing_plan);
+    ant[0].fitness = compute_fitness( ant[0].tour, ant[0].visited, ant[0].tour_size, ant[0].packing_plan);
     copy_from_to( &ant[0], best_so_far_ant );    
     
     help = ant[0].fitness;

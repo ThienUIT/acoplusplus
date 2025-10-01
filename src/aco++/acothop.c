@@ -123,7 +123,7 @@ void construct_solutions( void )
         ant[k].tour[ant[k].tour_size++] = instance.n - 1;
         ant[k].tour[ant[k].tour_size++] = ant[k].tour[0];
         for( i = ant[k].tour_size; i < instance.n; i++ ) ant[k].tour[i] = 0;
-        ant[k].fitness = compute_fitness_hybrid_search( ant[k].tour, ant[k].visited, ant[k].tour_size, ant[k].packing_plan );
+        ant[k].fitness = compute_fitness( ant[k].tour, ant[k].visited, ant[k].tour_size, ant[k].packing_plan );
         if ( acs_flag )
             local_acs_pheromone_update( &ant[k], ant[k].tour_size - 1);
     }
@@ -164,7 +164,7 @@ void local_search( void )
             fprintf(stderr,"type of local search procedure not correctly specified\n");
             exit(1);
         }
-        ant[k].fitness = compute_fitness_hybrid_search( ant[k].tour, ant[k].visited, ant[k].tour_size, ant[k].packing_plan ); 
+        ant[k].fitness = compute_fitness( ant[k].tour, ant[k].visited, ant[k].tour_size, ant[k].packing_plan ); 
         if (termination_condition()) return;
     }
 }
