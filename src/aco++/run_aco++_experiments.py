@@ -104,7 +104,7 @@ def launcher(tsp_base, number_of_items_per_city, knapsack_type, knapsack_size, m
     
 if __name__ == "__main__":
 
-    tsp_base = ["eil51" ]
+    tsp_base = ["eil51", "pr107", "a280", "dsj1000", ]
     number_of_items_per_city = [1, 3, 5, 10, ]
     knapsack_type = ["bsc", "unc", "usw", ]
     knapsack_size = [1, 5, 10, ]

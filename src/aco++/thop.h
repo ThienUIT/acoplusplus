@@ -110,10 +110,6 @@ long int** compute_nn_lists(void);
 
 long int compute_fitness(long int *t, char *visited, long int t_size, char *p);
 
-static double travel_time_increment_when_adding_weight(const EdgeInfo *edges, long t_size, const long *W_edge, long idx, long w, double vmax, double vmin, double nu) 
-
-static double travel_time_decrement_when_removing_weight(const EdgeInfo *edges, long t_size,const long *W_edge, long idx, long w,double vmax, double vmin, double nu);
-
 long greedy_packing_by_marginal_profit_per_time(const long *t, long t_size, const char *visited, char *p);
 
 long local_search_swap_items_to_improve_profit(const long *t, long t_size, const char *visited, char *p, long current_profit) ;
