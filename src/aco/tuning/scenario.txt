@@ -1,0 +1,48 @@
+###################################################### -*- mode: r -*- #####
+## Scenario setup for Iterated Race (iRace).
+############################################################################
+## To use the default value of a parameter of iRace, simply do not set
+## the parameter (comment it out in this file, and do not give any
+## value on the command line).
+
+## File that contains the description of the parameters.
+parameterFile = "./parameters_acominusthop.txt"
+
+## Directory where the programs will be run.
+execDir = "./"
+
+## Directory where tuning instances are located, either absolute path or
+## relative to current directory.
+trainInstancesDir = "./train_instances"
+
+## File that contains a list of logical expressions that cannot be TRUE
+## for any evaluated configuration. If empty or NULL, do not use forbidden
+## expressions.
+forbiddenFile = "./forbidden.txt"
+
+## The maximum number of runs (invocations of targetRunner) that will performed. It
+## determines the (maximum) budget of experiments for the tuning.
+maxExperiments = 5000
+
+## Indicates the number of decimal places to be considered for the
+## real parameters.
+digits = 2
+
+## A value of 0 silences all debug messages. Higher values provide
+## more verbose debug messages.
+debugLevel = 1
+
+## File to save tuning results as an R dataset, either absolute path
+## or relative to execDir.
+logFile = "log_eil15_01_bsc.Rdata"
+
+## Seed of the random number generator (must be a positive integer, NA
+## means use a random seed).
+seed = 11235813
+
+## Number of calls to targetRunner to execute in parallel. Less than 2
+## means calls to targetRunner are sequentially executed.
+parallel = 16
+
+## END of scenario file
+############################################################################

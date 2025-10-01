@@ -1,0 +1,376 @@
+#------------------------------------------------------------------------------
+# irace: An implementation in R of (Elitist) Iterated Racing
+# Version: 3.4.1.9fcaeaf
+# Copyright (C) 2010-2020
+# Manuel Lopez-Ibanez     <manuel.lopez-ibanez@manchester.ac.uk>
+# Jeremie Dubois-Lacoste  
+# Leslie Perez Caceres    <leslie.perez.caceres@ulb.ac.be>
+#
+# This is free software, and you are welcome to redistribute it under certain
+# conditions.  See the GNU General Public License for details. There is NO
+# WARRANTY; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+#
+# irace builds upon previous code from the race package:
+#     race: Racing methods for the selection of the best
+#     Copyright (C) 2003 Mauro Birattari
+#------------------------------------------------------------------------------
+# installed at: /home/es91661/R/x86_64-pc-linux-gnu-library/3.6/irace
+# called with: 
+Warning: A default scenario file './scenario.txt' has been found and will be read
+# 1 expression(s) specifying forbidden configurations read from '/storage1/dados/es91661/thop_solver/src/ils_brkga/tuning_eil51/forbidden.txt'
+## irace scenario:
+scenarioFile = "./scenario.txt"
+parameterFile = "/storage1/dados/es91661/thop_solver/src/ils_brkga/tuning_eil51/parameters_brkgathop.txt"
+execDir = "/storage1/dados/es91661/thop_solver/src/ils_brkga/tuning_eil51"
+logFile = "/storage1/dados/es91661/thop_solver/src/ils_brkga/tuning_eil51/log_eil51_10_unc.Rdata"
+recoveryFile = NULL
+instances = c("/storage1/dados/es91661/thop_solver/src/ils_brkga/tuning_eil51/train_instances/eil51_10_unc_01_01.thop", "/storage1/dados/es91661/thop_solver/src/ils_brkga/tuning_eil51/train_instances/eil51_10_unc_01_02.thop", "/storage1/dados/es91661/thop_solver/src/ils_brkga/tuning_eil51/train_instances/eil51_10_unc_01_03.thop", "/storage1/dados/es91661/thop_solver/src/ils_brkga/tuning_eil51/train_instances/eil51_10_unc_05_01.thop", "/storage1/dados/es91661/thop_solver/src/ils_brkga/tuning_eil51/train_instances/eil51_10_unc_05_02.thop", "/storage1/dados/es91661/thop_solver/src/ils_brkga/tuning_eil51/train_instances/eil51_10_unc_05_03.thop", "/storage1/dados/es91661/thop_solver/src/ils_brkga/tuning_eil51/train_instances/eil51_10_unc_10_01.thop", "/storage1/dados/es91661/thop_solver/src/ils_brkga/tuning_eil51/train_instances/eil51_10_unc_10_02.thop", "/storage1/dados/es91661/thop_solver/src/ils_brkga/tuning_eil51/train_instances/eil51_10_unc_10_03.thop")
+initConfigurations = NULL
+trainInstancesDir = "/storage1/dados/es91661/thop_solver/src/ils_brkga/tuning_eil51/train_instances"
+trainInstancesFile = ""
+configurationsFile = ""
+forbiddenExps = list(<bytecode>) = expression((pe + pm > 1))
+forbiddenFile = "/storage1/dados/es91661/thop_solver/src/ils_brkga/tuning_eil51/forbidden.txt"
+targetRunner = "/storage1/dados/es91661/thop_solver/src/ils_brkga/tuning_eil51/target-runner"
+targetRunnerRetries = 0
+targetRunnerData = ""
+targetRunnerParallel = NULL
+targetEvaluator = NULL
+maxExperiments = 5000
+maxTime = 0
+budgetEstimation = 0.02
+digits = 2
+debugLevel = 1
+nbIterations = 0
+nbExperimentsPerIteration = 0
+sampleInstances = TRUE
+testType = "friedman"
+firstTest = 5
+eachTest = 1
+minNbSurvival = 0
+nbConfigurations = 0
+mu = 5
+confidence = 0.95
+deterministic = FALSE
+seed = 11235813
+parallel = 16
+loadBalancing = TRUE
+mpi = FALSE
+batchmode = "0"
+softRestart = TRUE
+softRestartThreshold = 0.01
+testInstancesDir = ""
+testInstancesFile = ""
+testInstances = NULL
+testNbElites = 1
+testIterationElites = FALSE
+elitist = TRUE
+elitistNewInstances = 1
+elitistLimit = 2
+repairConfiguration = NULL
+capping = FALSE
+cappingType = "median"
+boundType = "candidate"
+boundMax = NULL
+boundDigits = 0
+boundPar = 1
+boundAsTimeout = TRUE
+postselection = 0
+aclib = FALSE
+## end of irace scenario
+# --- Parameters Hierarchy ---
+[1] "p"      "pe"     "pm"     "rhoe"   "lsfreq"
+     p     pe     pm   rhoe lsfreq 
+     1      1      1      1      1 
+     p     pe     pm   rhoe lsfreq 
+    ""     ""     ""     ""     "" 
+  Parameter Level Depends.on
+1         p     1           
+2        pe     1           
+3        pm     1           
+4      rhoe     1           
+5    lsfreq     1           
+
+# ------------------------
+# 2020-09-16 14:57:47 -03: Initialization
+# Elitist race
+# Elitist new instances: 1
+# Elitist limit: 2
+# nbIterations: 4
+# minNbSurvival: 4
+# nbParameters: 5
+# seed: 11235813
+# confidence level: 0.95
+# budget: 5000
+# mu: 5
+# deterministic: FALSE
+
+# 2020-09-16 14:57:47 -03: Iteration 1 of 4
+# experimentsUsedSoFar: 0
+# remainingBudget: 5000
+# currentBudget: 1250
+# nbConfigurations: 208
+# 2020-09-16 14:57:47 -03: Sample 208 configurations from uniform distribution
+# 2020-09-16 14:57:47 -03: Launch race
+# Markers:
+     x No test is performed.
+     c Configurations are discarded only due to capping.
+     - The test is performed and some configurations are discarded.
+     = The test is performed but no configuration is discarded.
+     ! The test is performed and configurations could be discarded but elite configurations are preserved.
+     . All alive configurations are elite and nothing is discarded
+
++-+-----------+-----------+-----------+---------------+-----------+--------+-----+----+------+
+| |   Instance|      Alive|       Best|      Mean best| Exp so far|  W time|  rho|KenW|  Qvar|
++-+-----------+-----------+-----------+---------------+-----------+--------+-----+----+------+
+|x|          1|        208|        145|   -61646.00000|        208|00:10:58|   NA|  NA|    NA|
+|x|          2|        208|        145|   -80705.00000|        416|00:11:36|+0.72|0.86|0.3963|
+|x|          3|        208|        145|   -69156.00000|        624|00:10:46|+0.77|0.84|0.3174|
+|x|          4|        208|        145|   -73330.50000|        832|00:11:07|+0.76|0.82|0.2969|
+|-|          5|         31|        145|   -76910.80000|       1040|00:11:31|+0.14|0.31|0.7734|
+|-|          6|         10|        145|   -72937.33333|       1071|00:01:39|+0.01|0.18|0.8650|
+|=|          7|         10|        145|   -74124.57143|       1081|00:00:50|-0.02|0.12|0.8959|
+|=|          8|         10|         47|   -78740.62500|       1091|00:00:49|-0.03|0.10|0.8892|
++-+-----------+-----------+-----------+---------------+-----------+--------+-----+----+------+
+# Stopped because tests without elimination (2) >= elitistLimit (2)
+Best-so-far configuration:          47    mean value:    -78740.62500
+Description of the best-so-far configuration:
+   .ID.   p  pe   pm rhoe lsfreq .PARENT.
+47   47 136 0.3 0.01 0.64    626       NA
+
+# 2020-09-16 15:57:07 -03: Extracting elites
+# 2020-09-16 15:57:07 -03: Elite configurations (first number is the configuration ID; listed from best to worst according to the sum of ranks):
+    .ID.    p   pe   pm rhoe lsfreq .PARENT. .ALIVE. .RANK. .WEIGHT.
+47    47  136 0.30 0.01 0.64    626       NA    TRUE     33      0.4
+145  145  422 0.52 0.02 0.69    874       NA    TRUE     33      0.3
+9      9  942 0.26 0.05 0.76    540       NA    TRUE     35      0.2
+174  174 1016 0.24 0.10 0.88    660       NA    TRUE     44      0.1
+# 2020-09-16 15:57:07 -03: Initialise model
+# 2020-09-16 15:57:07 -03: End of iteration 1
+# 2020-09-16 15:57:07 -03: Iteration 2 of 4
+# experimentsUsedSoFar: 1091
+# remainingBudget: 3909
+# currentBudget: 1303
+# nbConfigurations: 148
+# 2020-09-16 15:57:07 -03: Update model
+# 2020-09-16 15:57:07 -03: Sample 144 configurations from model
+# 2020-09-16 15:57:07 -03: Computing similarity of configurations .................................................................................................................................................... DONE
+# 2020-09-16 15:57:08 -03: Launch race
+# Markers:
+     x No test is performed.
+     c Configurations are discarded only due to capping.
+     - The test is performed and some configurations are discarded.
+     = The test is performed but no configuration is discarded.
+     ! The test is performed and configurations could be discarded but elite configurations are preserved.
+     . All alive configurations are elite and nothing is discarded
+
++-+-----------+-----------+-----------+---------------+-----------+--------+-----+----+------+
+| |   Instance|      Alive|       Best|      Mean best| Exp so far|  W time|  rho|KenW|  Qvar|
++-+-----------+-----------+-----------+---------------+-----------+--------+-----+----+------+
+|x|          9|        148|        174|   -81293.00000|        148|00:08:14|   NA|  NA|    NA|
+|x|          2|        148|        331|   -92013.50000|        292|00:07:46|+0.82|0.91|0.2536|
+|x|          5|        148|         47|   -95995.00000|        436|00:07:45|+0.84|0.90|0.1941|
+|x|          6|        148|        331|   -82673.25000|        580|00:07:28|+0.71|0.78|0.3341|
+|-|          1|         40|        283|   -75187.40000|        724|00:07:30|-0.07|0.15|1.0813|
+|=|          3|         40|        271|   -70749.50000|        760|00:02:27|-0.07|0.11|1.0799|
+|=|          4|         40|        271|   -72725.71429|        796|00:02:28|-0.04|0.11|1.0367|
+|=|          7|         40|        271|   -73882.50000|        832|00:02:29|+0.00|0.13|0.9991|
+|=|          8|         40|        271|   -73674.33333|        868|00:02:27|+0.03|0.14|0.9532|
+|-|         10|         23|        331|   -78501.30000|        908|00:02:30|+0.01|0.11|0.9341|
+|-|         11|         12|        331|   -80536.18182|        931|00:01:40|+0.02|0.11|0.8825|
+|=|         12|         12|        331|   -78220.08333|        943|00:00:49|-0.02|0.07|0.9295|
+|=|         13|         12|        331|   -79036.84615|        955|00:00:50|+0.01|0.09|0.9001|
++-+-----------+-----------+-----------+---------------+-----------+--------+-----+----+------+
+# Stopped because tests without elimination (2) >= elitistLimit (2)
+Best-so-far configuration:         331    mean value:    -79036.84615
+Description of the best-so-far configuration:
+    .ID.   p   pe   pm rhoe lsfreq .PARENT.
+331  331 275 0.36 0.07 0.71    611       47
+
+# 2020-09-16 16:51:38 -03: Extracting elites
+# 2020-09-16 16:51:38 -03: Elite configurations (first number is the configuration ID; listed from best to worst according to the sum of ranks):
+    .ID.   p   pe   pm rhoe lsfreq .PARENT. .ALIVE. .RANK. .WEIGHT.
+331  331 275 0.36 0.07 0.71    611       47    TRUE     63      0.4
+47    47 136 0.30 0.01 0.64    626       NA    TRUE     64      0.3
+227  227 120 0.48 0.14 0.76    933      145    TRUE     73      0.2
+305  305 409 0.24 0.08 0.72    274      174    TRUE     74      0.1
+# 2020-09-16 16:51:38 -03: End of iteration 2
+# 2020-09-16 16:51:38 -03: Iteration 3 of 4
+# experimentsUsedSoFar: 2046
+# remainingBudget: 2954
+# currentBudget: 1477
+# nbConfigurations: 109
+# 2020-09-16 16:51:38 -03: Update model
+# 2020-09-16 16:51:38 -03: Sample 105 configurations from model
+# 2020-09-16 16:51:38 -03: Computing similarity of configurations ............................................................................................................. DONE
+# 2020-09-16 16:51:38 -03: Launch race
+# Markers:
+     x No test is performed.
+     c Configurations are discarded only due to capping.
+     - The test is performed and some configurations are discarded.
+     = The test is performed but no configuration is discarded.
+     ! The test is performed and configurations could be discarded but elite configurations are preserved.
+     . All alive configurations are elite and nothing is discarded
+
++-+-----------+-----------+-----------+---------------+-----------+--------+-----+----+------+
+| |   Instance|      Alive|       Best|      Mean best| Exp so far|  W time|  rho|KenW|  Qvar|
++-+-----------+-----------+-----------+---------------+-----------+--------+-----+----+------+
+|x|         14|        109|        384|   -86730.00000|        109|00:05:44|   NA|  NA|    NA|
+|x|          6|        109|        397|   -70801.00000|        214|00:05:44|-0.25|0.37|1.1123|
+|x|          2|        109|        397|   -79852.66667|        319|00:05:48|-0.01|0.33|0.9099|
+|x|          7|        109|         47|   -82899.50000|        424|00:05:46|+0.19|0.39|0.7322|
+|-|          1|         90|        422|   -74021.40000|        529|00:05:45|-0.10|0.12|1.0607|
+|=|         13|         90|        446|   -78883.33333|        615|00:04:57|-0.02|0.15|0.9897|
+|-|          5|         65|        384|   -83989.85714|        701|00:04:58|-0.00|0.14|0.9505|
+|-|          4|         37|         47|   -85091.50000|        762|00:03:18|+0.00|0.13|0.9374|
+|=|         10|         37|        382|   -85371.11111|        795|00:02:28|+0.03|0.14|0.9207|
+|-|          8|         22|         47|   -85937.50000|        828|00:02:27|+0.02|0.11|0.9289|
+|=|         11|         22|        384|   -87494.90909|        846|00:01:38|+0.04|0.13|0.9107|
+|=|          9|         22|        384|   -86744.58333|        864|00:01:38|+0.03|0.11|0.9091|
+|=|         12|         22|        384|   -84131.30769|        882|00:01:38|+0.03|0.10|0.9139|
+|=|          3|         22|        384|   -81297.92857|        900|00:01:38|+0.01|0.08|0.9232|
+|=|         15|         22|        384|   -80948.40000|        922|00:01:38|+0.01|0.08|0.9248|
++-+-----------+-----------+-----------+---------------+-----------+--------+-----+----+------+
+# Stopped because tests without elimination (2) >= elitistLimit (2)
+Best-so-far configuration:         384    mean value:    -80948.40000
+Description of the best-so-far configuration:
+    .ID.   p  pe   pm rhoe lsfreq .PARENT.
+384  384 169 0.3 0.04 0.65    720       47
+
+# 2020-09-16 17:46:50 -03: Extracting elites
+# 2020-09-16 17:46:50 -03: Elite configurations (first number is the configuration ID; listed from best to worst according to the sum of ranks):
+    .ID.   p   pe   pm rhoe lsfreq .PARENT. .ALIVE. .RANK. .WEIGHT.
+384  384 169 0.30 0.04 0.65    720       47    TRUE    122      0.4
+382  382 345 0.16 0.05 0.71    360      305    TRUE    135      0.3
+408  408 184 0.37 0.04 0.66    728       47    TRUE    143      0.2
+353  353 181 0.40 0.08 0.70    620      331    TRUE    148      0.1
+# 2020-09-16 17:46:50 -03: End of iteration 3
+# 2020-09-16 17:46:50 -03: Iteration 4 of 4
+# experimentsUsedSoFar: 2968
+# remainingBudget: 2032
+# currentBudget: 2032
+# nbConfigurations: 130
+# 2020-09-16 17:46:50 -03: Update model
+# 2020-09-16 17:46:50 -03: Sample 126 configurations from model
+# 2020-09-16 17:46:51 -03: Computing similarity of configurations .................................................................................................................................. DONE
+# 2020-09-16 17:46:51 -03: Launch race
+# Markers:
+     x No test is performed.
+     c Configurations are discarded only due to capping.
+     - The test is performed and some configurations are discarded.
+     = The test is performed but no configuration is discarded.
+     ! The test is performed and configurations could be discarded but elite configurations are preserved.
+     . All alive configurations are elite and nothing is discarded
+
++-+-----------+-----------+-----------+---------------+-----------+--------+-----+----+------+
+| |   Instance|      Alive|       Best|      Mean best| Exp so far|  W time|  rho|KenW|  Qvar|
++-+-----------+-----------+-----------+---------------+-----------+--------+-----+----+------+
+|x|         16|        130|        570|   -63089.00000|        130|00:07:22|   NA|  NA|    NA|
+|x|          7|        130|        561|   -76711.50000|        256|00:06:34|-0.24|0.38|0.8918|
+|x|          6|        130|        482|   -68012.00000|        382|00:06:33|+0.13|0.42|0.6643|
+|x|         13|        130|        561|   -73658.75000|        508|00:06:34|-0.04|0.22|0.8455|
+|-|          1|        113|        567|   -70279.20000|        634|00:06:34|-0.11|0.11|1.0881|
+|=|          5|        113|        551|   -74952.66667|        743|00:05:47|-0.12|0.07|1.0961|
+|=|          4|        113|        551|   -77276.85714|        852|00:05:46|-0.09|0.06|1.0732|
+|=|         15|        113|        551|   -77532.37500|        961|00:05:44|-0.07|0.07|1.0410|
+|=|          9|        113|        551|   -77689.66667|       1070|00:05:44|-0.03|0.08|1.0080|
+|=|          3|        113|        551|   -74322.70000|       1179|00:05:44|-0.04|0.07|1.0177|
+|=|         11|        113|        551|   -77077.18182|       1288|00:05:47|-0.03|0.06|1.0110|
+|=|         12|        113|        551|   -74844.33333|       1397|00:05:44|-0.03|0.06|1.0107|
+|=|          8|        113|        551|   -75190.38462|       1506|00:05:44|-0.02|0.06|0.9965|
+|=|          2|        113|        551|   -77229.78571|       1615|00:05:47|-0.01|0.06|0.9942|
+|=|         14|        113|        551|   -77599.40000|       1724|00:05:44|+0.01|0.07|0.9754|
+|-|         10|         83|        524|   -78724.25000|       1833|00:05:46|-0.02|0.04|1.0119|
+|=|         17|         83|        524|   -76798.94118|       1916|00:04:54|-0.02|0.04|1.0129|
+|=|         18|         83|        512|   -77714.44444|       1999|00:04:55|-0.02|0.04|1.0068|
++-+-----------+-----------+-----------+---------------+-----------+--------+-----+----+------+
+# Stopped because experiments for next test (2082) > max experiments (2032)
+Best-so-far configuration:         512    mean value:    -77714.44444
+Description of the best-so-far configuration:
+    .ID.   p   pe   pm rhoe lsfreq .PARENT.
+512  512 183 0.29 0.03 0.65    740      384
+
+# 2020-09-16 19:33:44 -03: Extracting elites
+# 2020-09-16 19:33:44 -03: Elite configurations (first number is the configuration ID; listed from best to worst according to the sum of ranks):
+    .ID.   p   pe   pm rhoe lsfreq .PARENT. .ALIVE. .RANK. .WEIGHT.
+512  512 183 0.29 0.03 0.65    740      384    TRUE    580      0.4
+524  524 209 0.30 0.04 0.64    708      384    TRUE    603      0.3
+583  583 144 0.35 0.05 0.64    680      408    TRUE    605      0.2
+384  384 169 0.30 0.04 0.65    720       47    TRUE    609      0.1
+# 2020-09-16 19:33:44 -03: End of iteration 4
+# 2020-09-16 19:33:44 -03: Iteration 5 of 5
+# experimentsUsedSoFar: 4967
+# remainingBudget: 33
+# currentBudget: 33
+# nbConfigurations: 5
+# 2020-09-16 19:33:44 -03: Update model
+# 2020-09-16 19:33:44 -03: Sample 1 configurations from model
+# 2020-09-16 19:33:44 -03: Computing similarity of configurations ..... DONE
+# 2020-09-16 19:33:44 -03: Launch race
+# Markers:
+     x No test is performed.
+     c Configurations are discarded only due to capping.
+     - The test is performed and some configurations are discarded.
+     = The test is performed but no configuration is discarded.
+     ! The test is performed and configurations could be discarded but elite configurations are preserved.
+     . All alive configurations are elite and nothing is discarded
+
++-+-----------+-----------+-----------+---------------+-----------+--------+-----+----+------+
+| |   Instance|      Alive|       Best|      Mean best| Exp so far|  W time|  rho|KenW|  Qvar|
++-+-----------+-----------+-----------+---------------+-----------+--------+-----+----+------+
+|x|         19|          5|        584|   -80333.00000|          5|00:00:49|   NA|  NA|    NA|
+|x|          6|          5|        584|   -65670.50000|          6|00:00:49|-0.30|0.35|0.9571|
+|x|         12|          5|        524|   -61072.00000|          7|00:00:49|-0.27|0.16|0.9166|
+|x|          3|          5|        524|   -57579.25000|          8|00:00:49|+0.00|0.25|0.6880|
+|=|         17|          5|        524|   -55262.20000|          9|00:00:49|+0.04|0.23|0.6714|
+|=|         11|          5|        584|   -62972.83333|         10|00:00:49|+0.01|0.17|0.7912|
+|=|         16|          5|        524|   -61882.85714|         11|00:00:49|-0.08|0.08|0.8685|
+|=|          7|          5|        524|   -65092.75000|         12|00:00:49|-0.10|0.03|0.8799|
+|=|         14|          5|        584|   -68078.88889|         13|00:00:49|-0.09|0.03|0.8673|
+|=|          8|          5|        584|   -69741.20000|         14|00:00:49|-0.05|0.05|0.8338|
+|=|          2|          5|        584|   -73209.00000|         15|00:00:49|-0.02|0.07|0.7993|
+|=|         15|          5|        584|   -73615.25000|         16|00:00:49|+0.00|0.09|0.7772|
+|=|          5|          5|        584|   -75971.07692|         17|00:00:49|+0.00|0.08|0.7759|
+|=|          9|          5|        584|   -76152.64286|         18|00:00:49|-0.01|0.06|0.8029|
+|=|         10|          5|        584|   -78039.33333|         19|00:00:49|+0.00|0.07|0.7884|
+|=|          1|          5|        584|   -76550.50000|         20|00:00:49|-0.02|0.05|0.8009|
+|=|          4|          5|        584|   -77304.58824|         21|00:00:49|-0.02|0.04|0.8137|
+|=|         18|          5|        584|   -77975.38889|         22|00:00:49|-0.03|0.02|0.8213|
+|=|         13|          5|        584|   -79067.15789|         23|00:00:49|-0.03|0.03|0.8164|
+|=|         20|          5|        584|   -77568.25000|         28|00:00:49|-0.03|0.02|0.8168|
++-+-----------+-----------+-----------+---------------+-----------+--------+-----+----+------+
+# Stopped because tests without elimination (2) >= elitistLimit (2)
+Best-so-far configuration:         584    mean value:    -77568.25000
+Description of the best-so-far configuration:
+    .ID.   p   pe   pm rhoe lsfreq .PARENT.
+584  584 171 0.27 0.03 0.63    701      524
+
+# 2020-09-16 19:50:08 -03: Extracting elites
+# 2020-09-16 19:50:08 -03: Elite configurations (first number is the configuration ID; listed from best to worst according to the sum of ranks):
+    .ID.   p   pe   pm rhoe lsfreq .PARENT. .ALIVE. .RANK. .WEIGHT.
+584  584 171 0.27 0.03 0.63    701      524    TRUE     53      0.4
+512  512 183 0.29 0.03 0.65    740      384    TRUE     59      0.3
+583  583 144 0.35 0.05 0.64    680      408    TRUE     61      0.2
+384  384 169 0.30 0.04 0.65    720       47    TRUE     62      0.1
+# 2020-09-16 19:50:08 -03: End of iteration 5
+# 2020-09-16 19:50:08 -03: Stopped because there is not enough budget left to race more than the minimum (4)
+# You may either increase the budget or set 'minNbSurvival' to a lower value
+# Iteration: 6
+# nbIterations: 6
+# experimentsUsedSoFar: 4995
+# timeUsed: 0
+# remainingBudget: 5
+# currentBudget: 5
+# number of elites: 4
+# nbConfigurations: 4
+# Best configurations (first number is the configuration ID; listed from best to worst according to the sum of ranks):
+      p   pe   pm rhoe lsfreq
+584 171 0.27 0.03 0.63    701
+512 183 0.29 0.03 0.65    740
+583 144 0.35 0.05 0.64    680
+384 169 0.30 0.04 0.65    720
+# Best configurations as commandlines (first number is the configuration ID; same order as above):
+584  --p 171 --pe 0.27 --pm 0.03 --rhoe 0.63 --lsfreq 701
+512  --p 183 --pe 0.29 --pm 0.03 --rhoe 0.65 --lsfreq 740
+583  --p 144 --pe 0.35 --pm 0.05 --rhoe 0.64 --lsfreq 680
+384  --p 169 --pe 0.3 --pm 0.04 --rhoe 0.65 --lsfreq 720

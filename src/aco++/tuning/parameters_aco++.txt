@@ -1,0 +1,8 @@
+### Parameter file for the ACO++
+# name		switch		     type	values			[conditions (using R syntax)]
+localsearch     "--localsearch "     c  	(0, 1, 2, 3)
+alpha           "--alpha "           r  	(0.00, 10.00)
+beta            "--beta "            r  	(0.00, 10.00)
+rho             "--rho  "            r  	(0.01, 1.00)
+ptries          "--ptries  "         c  	(1, 2, 3, 4, 5)
+ants            "--ants "            c	    (10, 20, 50, 100, 200, 500, 1000)

@@ -1,0 +1,8 @@
+### Parameter file for the BRKGATHOP
+# name		switch		     type	values			[conditions (using R syntax)]
+p            "--p "            i  	(10, 5000)
+pe           "--pe "           r  	(0.1, 0.9)
+pm           "--pm "           r  	(0.0, 0.9)
+rhoe         "--rhoe "         r  	(0.50, 0.99)
+lsfreq       "--lsfreq "       i  	(5, 1000)
+
