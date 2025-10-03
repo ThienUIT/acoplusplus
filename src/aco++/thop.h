@@ -110,9 +110,27 @@ long int** compute_nn_lists(void);
 
 long int compute_fitness(long int *t, char *visited, long int t_size, char *p);
 
+void build_route_edge_info(const long int *t, long int t_size, EdgeInfo *edges);
+
+inline double compute_travel_time_on_edge(double dist, double vmax, double vmin, double nu, long W);
+
+double travel_time_increment_when_adding_weight(const EdgeInfo *edges, long t_size, const long *W_edge, long idx, long w, double vmax, double vmin, double nu);
+
+double travel_time_decrement_when_removing_weight(const EdgeInfo *edges, long t_size, const long *W_edge, long idx, long w, double vmax, double vmin, double nu);
+
 long greedy_packing_by_marginal_profit_per_time(const long *t, long t_size, const char *visited, char *p);
 
 long local_search_swap_items_to_improve_profit(const long *t, long t_size, const char *visited, char *p, long current_profit) ;
 
 long int compute_fitness_hybrid(long *t, char *visited, long t_size, char *p);
+
+long greedy_packing_with_lookahead(const long *t, long t_size, const char *visited, char *p);
+
+double simulate_time(const long int *t, long int t_size,
+                            long int *weight_accumulated,
+                            const char *plan);
+
+int try_drop_or_swap_items(const long *t, long t_size, const char *visited,
+                                  char *p, long *profit);
+
 #endif
