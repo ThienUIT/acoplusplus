@@ -429,21 +429,24 @@ double travel_time_increment_when_adding_weight(const EdgeInfo *edges, long t_si
 double travel_time_decrement_when_removing_weight(const EdgeInfo *edges, long t_size, const long *W_edge, long idx, long w, double vmax, double vmin, double nu) {
     double dt = 0.0;
     for (long e = idx; e < t_size - 1; ++e) {
-        dt += compute_travel_time_on_edge(edges[e].dist, vmax, vmin, nu, W_edge[e] - w)
+        long Wnew = W_edge[e] - w;
+        if (Wnew < 0) Wnew = 0; // clamp to zero
+        dt += compute_travel_time_on_edge(edges[e].dist, vmax, vmin, nu, Wnew)
             - compute_travel_time_on_edge(edges[e].dist, vmax, vmin, nu, W_edge[e]);
     }
     return dt;
 }
-/*------------------------------------------------------------*/
-/*  Helper: Simulate travel time with a temporary packing plan */
-/*------------------------------------------------------------*/
-double simulate_time(const long int *t, long int t_size,
-                            long int *weight_accumulated,
-                            const char *plan) {
-    long int prev_city = 0, curr_city;
+// -------------------------------------------------------------
+// Simulate travel time with a temporary packing plan (fixed)
+// -------------------------------------------------------------
+double simulate_time(const long int *t, long int t_size, long int *weight_accumulated, const char *plan) {
+    long int prev_city = t[0];
     double total_time = 0.0;
     long int total_weight = 0;
-    const double v = (instance.max_speed - instance.min_speed) / instance.capacity_of_knapsack;
+
+    const double vmax = instance.max_speed;
+    const double vmin = instance.min_speed;
+    const double nu = (vmax - vmin) / (double)instance.capacity_of_knapsack;
 
     // Reset weight accumulation per city
     for (int i = 0; i < instance.n; i++) weight_accumulated[i] = 0;
@@ -453,20 +456,21 @@ double simulate_time(const long int *t, long int t_size,
         }
     }
 
+    // Traverse every edge in the tour (no skipping)
     for (int i = 1; i < t_size; i++) {
-        curr_city = t[i];
-        // Skip city if no item is picked there (except special last city)
-        if (weight_accumulated[curr_city] == 0 && curr_city != instance.n - 2) continue;
-
-        total_time += instance.distance[prev_city][curr_city] /
-                      (instance.max_speed - v * total_weight);
+        long curr_city = t[i];
+        double speed = vmax - nu * (double)total_weight;
+        if (speed < vmin) speed = vmin;
+        total_time += instance.distance[prev_city][curr_city] / speed;
 
         if (total_time - EPSILON > instance.max_time) {
             return 1e9; // infeasible (exceeds max_time)
         }
+
         total_weight += weight_accumulated[curr_city];
         prev_city = curr_city;
     }
+
     return total_time;
 }
 // -------------------------------------------------------------
@@ -475,43 +479,47 @@ double simulate_time(const long int *t, long int t_size,
 int try_drop_or_swap_items(const long *t, long t_size, const char *visited, char *p, long *profit) {
     int improved = 0;
 
+    // Compute total current weight
+    long total_w_now = 0;
+    for (int k = 0; k < instance.m; k++) if (p[k]) total_w_now += instance.itemptr[k].weight;
+
     for (int new_j = 0; new_j < instance.m; new_j++) {
         if (p[new_j] || !visited[instance.itemptr[new_j].id_city]) continue;
 
         long pj = instance.itemptr[new_j].profit;
         long wj = instance.itemptr[new_j].weight;
 
-        // Collect currently chosen items
+        // Collect chosen items
         int chosen[instance.m], cnt = 0;
         for (int d = 0; d < instance.m; d++) if (p[d]) chosen[cnt++] = d;
         if (cnt == 0) continue;
 
-        // Sort chosen items ascending by profit/weight ratio
+        // Sort chosen by profit/weight ratio (ascending)
         double ratio[cnt];
         for (int r = 0; r < cnt; r++) {
             ratio[r] = (double)instance.itemptr[chosen[r]].profit /
                        (double)instance.itemptr[chosen[r]].weight;
         }
-        for (int a = 0; a < cnt; a++) for (int b = a+1; b < cnt; b++) {
+        for (int a = 0; a < cnt; a++) for (int b = a + 1; b < cnt; b++) {
             if (ratio[a] > ratio[b]) {
                 double tmp = ratio[a]; ratio[a] = ratio[b];
                 int ti = chosen[a]; chosen[a] = chosen[b]; chosen[b] = ti;
             }
         }
 
-        // Try dropping 1, 2 or 3 low-value items
+        // Try dropping 1–3 low-value items
         for (int drop = 1; drop <= 3 && drop <= cnt; drop++) {
             long cand_profit = *profit + pj;
-            long cand_weight = instance.itemptr[new_j].weight;
+            long cand_weight = total_w_now + wj;
             for (int d = 0; d < drop; d++) {
-                cand_profit -= instance.itemptr[ chosen[d] ].profit;
-                cand_weight += instance.itemptr[new_j].weight -
-                               instance.itemptr[ chosen[d] ].weight;
+                cand_profit -= instance.itemptr[chosen[d]].profit;
+                cand_weight -= instance.itemptr[chosen[d]].weight;
             }
+
             if (cand_weight > instance.capacity_of_knapsack) continue;
 
             // Temporarily modify plan
-            for (int d = 0; d < drop; d++) p[ chosen[d] ] = 0;
+            for (int d = 0; d < drop; d++) p[chosen[d]] = 0;
             p[new_j] = 1;
 
             // Check time constraint
@@ -525,7 +533,7 @@ int try_drop_or_swap_items(const long *t, long t_size, const char *visited, char
             } else {
                 // revert
                 p[new_j] = 0;
-                for (int d = 0; d < drop; d++) p[ chosen[d] ] = 1;
+                for (int d = 0; d < drop; d++) p[chosen[d]] = 1;
             }
         }
         NEXT_ITEM: ;
